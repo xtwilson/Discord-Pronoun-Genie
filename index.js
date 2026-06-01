@@ -87,13 +87,18 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
   const member = interaction.member;
   const baseName = member.displayName.split("•")[0].trim();
-  const selected = interaction.customId;
+
+  // Use the button label, not the customId
+  const selected = interaction.component.label;
 
   let newNickname = baseName;
 
-  if (selected !== "clear_pronouns") {
-    newNickname = `${baseName} • ${selected}`;
-  }
+if (selected.toLowerCase() === "use my name") {
+  newNickname = `${baseName} • [use my name]`;
+} else if (selected.toLowerCase() !== "clear pronouns") {
+  newNickname = `${baseName} • (${selected})`;
+}
+
 
   if (newNickname.length > 32) {
     newNickname = newNickname.slice(0, 32);
@@ -113,6 +118,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
     });
   }
 });
+
 
 // Login
 client.login(process.env.DISCORD_TOKEN);
