@@ -46,19 +46,31 @@ client.once(Events.ClientReady, async () => {
 
   const { messageText, buttons } = await loadPronounConfig();
 
-  // Build rows of buttons (3 per row)
-  const rows = [];
-  for (let i = 0; i < buttons.length; i += 3) {
-    const row = new ActionRowBuilder();
-    buttons.slice(i, i + 3).forEach((btn) => {
-      row.addComponents(
-        new ButtonBuilder()
-          .setCustomId(btn.id)
-          .setLabel(btn.label)
-          .setStyle(ButtonStyle.Primary)
-      );
-    });
-    rows.push(row);
+// Build rows of buttons (3 per row)
+const rows = [];
+for (let i = 0; i < buttons.length; i += 3) {
+  const row = new ActionRowBuilder();
+
+  buttons.slice(i, i + 3).forEach((btn) => {
+    const label = btn.label?.trim() || "unknown";
+    const value = btn.value?.trim() || "unknown";
+
+    // Generate a safe customId
+    const id = value.replace(/\s+/g, "_").toLowerCase();
+
+    row.addComponents(
+      new ButtonBuilder()
+        .setCustomId(id)
+        .setLabel(label)
+        .setStyle(ButtonStyle.Primary)
+    );
+  });
+
+  rows.push(row);
+}
+});
+
+if (row.components.length > 0) rows.push(row);
   }
 
   // Post buttons to the configured channel
