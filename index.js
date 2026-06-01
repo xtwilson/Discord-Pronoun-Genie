@@ -46,19 +46,16 @@ client.once(Events.ClientReady, async () => {
   const messageContent = config.message.content;
   const buttons = config.buttons.button;
 
-  // Build rows of buttons (3 per row)
 // Build rows of buttons (3 per row)
 const rows = [];
 for (let i = 0; i < buttons.length; i += 3) {
   const row = new ActionRowBuilder();
 
-  buttons.slice(i, i + 3).forEach((btn, index) => {
+  buttons.slice(i, i + 3).forEach((btn) => {
     const label = btn.label?.trim() || "unknown";
     const value = btn.value?.trim() || "unknown";
 
-    // Generate safe, unique customId
-    const baseId = value.replace(/\s+/g, "_").toLowerCase();
-    const id = `${baseId}_${i + index}`; // <-- unique suffix
+    const id = value.replace(/\s+/g, "_").toLowerCase();
 
     row.addComponents(
       new ButtonBuilder()
