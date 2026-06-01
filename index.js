@@ -51,11 +51,13 @@ const rows = [];
 for (let i = 0; i < buttons.length; i += 3) {
   const row = new ActionRowBuilder();
 
-  buttons.slice(i, i + 3).forEach((btn) => {
+  buttons.slice(i, i + 3).forEach((btn, index) => {
     const label = btn.label?.trim() || "unknown";
     const value = btn.value?.trim() || "unknown";
 
-    const id = value.replace(/\s+/g, "_").toLowerCase();
+    // Generate safe, unique customId
+    const baseId = value.replace(/\s+/g, "_").toLowerCase();
+    const id = `${baseId}_${i + index}`; // unique suffix
 
     row.addComponents(
       new ButtonBuilder()
@@ -67,6 +69,7 @@ for (let i = 0; i < buttons.length; i += 3) {
 
   rows.push(row);
 }
+
 
  // Send the message with buttons
   await channel.send({
