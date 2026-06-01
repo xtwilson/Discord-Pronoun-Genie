@@ -4,6 +4,26 @@
 require('dotenv').config();
 require("./health");
 
+const fs = require("fs");
+const { ActionRowBuilder, ButtonBuilder, ButtonStyle } = require("discord.js");
+const xml2js = require("xml2js");
+
+async function loadPronounConfig() {
+  const xml = fs.readFileSync("my-discord-pronoun-nickname.xml", "utf8");
+  const parsed = await xml2js.parseStringPromise(xml);
+
+  const messageText = parsed.config.message[0].content[0];
+  const buttons = parsed.config.buttons[0].button.map(btn => ({
+    label: btn.$.label,
+    value: btn.$.value
+  }));
+
+  return { messageText, buttons };
+}
+
+// ⬇️ ADD THIS FUNCTION RIGHT HERE
+async function
+  
 const {
   Client,
   GatewayIntentBits,
@@ -27,25 +47,51 @@ const client = new Client({
 
 // The pronoun buttons we will show
 // Original sets + your new ones + Clear
-const PRONOUN_OPTIONS = [
-  // Original
-  { id: 'he_him', label: 'He/Him' },
-  { id: 'she_her', label: 'She/Her' },
-  { id: 'they_them', label: 'They/Them' },
-  { id: 'it_its', label: 'It/Its' },
-  { id: 'any', label: 'Any pronouns' },
-  { id: 'ask', label: 'Ask me' },
+function buildPronounRows(buttons) {
+  const rows = [];
 
-  // New combos
-  { id: 'she_they', label: 'She/They' },
-  { id: 'he_they', label: 'He/They' },
-  { id: 'ze_hir', label: 'Ze/Hir' },
-  { id: 'xe_xem', label: 'Xe/Xem' },
-  { id: 'ey_em', label: 'Ey/Em' },
+  // Row 1: she/her, he/him, they/them
+  rows.push(new ActionRowBuilder().addComponents(
+    new ButtonBuilder().setCustomId(buttons[0].value).setLabel(buttons[0].label).setStyle(ButtonStyle.Primary),
+    new ButtonBuilder().setCustomId(buttons[1].value).setLabel(buttons[1].label).setStyle(ButtonStyle.Primary),
+    new ButtonBuilder().setCustomId(buttons[2].value).setLabel(buttons[2].label).setStyle(ButtonStyle.Primary)
+  ));
+
+  // Row 2: she/they, he/they
+  rows.push(new ActionRowBuilder().addComponents(
+    new ButtonBuilder().setCustomId(buttons[3].value).setLabel(buttons[3].label).setStyle(ButtonStyle.Primary),
+    new ButtonBuilder().setCustomId(buttons[4].value).setLabel(buttons[4].label).setStyle(ButtonStyle.Primary)
+  ));
+
+  // Row 3: any pronouns, ask me, use my name
+  rows.push(new ActionRowBuilder().addComponents(
+    new ButtonBuilder().setCustomId(buttons[5].value).setLabel(buttons[5].label).setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId(buttons[6].value).setLabel(buttons[6].label).setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId(buttons[7].value).setLabel(buttons[7].label).setStyle(ButtonStyle.Secondary)
+  ));
+
+  return rows;
+}
 
   // Special clear button
   { id: 'clear', label: 'Clear pronouns' },
 ];
+
+const fs = require("fs");
+const xml2js = require("xml2js");
+
+async function loadPronounConfig() {
+  const xml = fs.readFileSync("my-discord-pronoun-nickname.xml", "utf8");
+  const parsed = await xml2js.parseStringPromise(xml);
+
+  const messageText = parsed.config.message[0].content[0];
+  const buttons = parsed.config.buttons[0].button.map(btn => ({
+    label: btn.$.label,
+    value: btn.$.value
+  }));
+
+  return { messageText, buttons };
+}
 
 // Find a pronoun option by its id
 function getPronounById(id) {
@@ -86,6 +132,23 @@ function buildDisplayName(baseName, pronouns) {
 client.once(Events.ClientReady, () => {
   console.log(`Logged in as ${client.user.tag}`);
 });
+client.once("ready", async () => {
+  console.log(`Logged in as ${client.user.tag}`);
+
+  const channelId = process.env.CHANNEL_ID;
+  const channel = await client.channels.fetch(channelId);
+
+  const { messageText, buttons } = await loadPronounConfig();
+  const rows = buildPronounRows(buttons);
+
+  await channel.send({
+    content: messageText,
+    components: rows
+  });
+
+  console.log("Pronoun buttons posted.");
+});
+
 
 // When any message appears in a guild channel
 client.on(Events.MessageCreate, async (message) => {
@@ -146,6 +209,29 @@ client.on(Events.MessageCreate, async (message) => {
 });
 
 // Handle button clicks
+client.on("interactionCreate", async interaction => {
+  if (!interaction.isButton()) return;
+
+  const pronouns = interaction.customId;
+  const member = interaction.member;
+
+  // Build new nickname
+  const baseName = member.displayName.split(" [")[0];
+  const newName = pronouns === "use my name"
+    ? baseName
+    : pronouns === "ask me"
+      ? `${baseName} [Ask Me]`
+      : `${baseName} [${pronouns}]`;
+
+  try {
+    await member.setNickname(newName);
+    await interaction.reply({ content: `Updated your nickname to **${newName}**`, ephemeral: true });
+  } catch (err) {
+    console.error(err);
+    await interaction.reply({ content: "I couldn't update your nickname. Check my permissions.", ephemeral: true });
+  }
+});
+
 client.on(Events.InteractionCreate, async (interaction) => {
   if (!interaction.isButton()) return;
   if (!interaction.customId.startsWith('pronoun_')) return;
