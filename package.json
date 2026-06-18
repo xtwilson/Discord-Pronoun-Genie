@@ -1,4 +1,10 @@
 {
+  "type": "module",
+  "dependencies": {
+    ...
+  }
+}
+{
   "name": "pronoun-nickname",
   "version": "1.0.0",
   "description": "",
