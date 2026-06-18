@@ -122,3 +122,6 @@ if (selected.toLowerCase() === "use my name") {
 
 // Login
 client.login(process.env.DISCORD_TOKEN);
+
+import http from "http";
+http.createServer((req, res) => res.end("OK")).listen(process.env.PORT || 3000);
