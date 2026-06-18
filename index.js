@@ -89,7 +89,8 @@ client.on(Events.InteractionCreate, async (interaction) => {
   if (!interaction.isButton()) return;
 
   const member = interaction.member;
-  const baseName = member.displayName.split("•")[0].trim();
+  const baseName = member.displayName.split("(")[0].trim();
+
 
   // Use the button label, not the customId
   const selected = interaction.component.label;
@@ -97,9 +98,9 @@ client.on(Events.InteractionCreate, async (interaction) => {
   let newNickname = baseName;
 
 if (selected.toLowerCase() === "use my name") {
-  newNickname = `${baseName} • [use my name]`;
+  newNickname = `${baseName} [use my name]`;
 } else if (selected.toLowerCase() !== "clear pronouns") {
-  newNickname = `${baseName} • (${selected})`;
+  newNickname = `${baseName} (${selected})`;
 }
 
 
@@ -111,13 +112,13 @@ if (selected.toLowerCase() === "use my name") {
     await member.setNickname(newNickname);
     await interaction.reply({
       content: `Updated your pronouns to **${selected}**`,
-      ephemeral: true,
+      flags: 64,
     });
   } catch (err) {
     console.error(err);
     await interaction.reply({
       content: "I couldn't update your nickname. Check my role position.",
-      ephemeral: true,
+      flags: 64,
     });
   }
 });
