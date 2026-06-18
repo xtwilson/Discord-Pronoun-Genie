@@ -9,9 +9,9 @@ const {
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
-} = require("discord.js");
-const fs = require("fs");
-const xml2js = require("xml2js");
+} from "discord.js";
+import fs from "fs";
+import xml2js from "xml2js";
 
 // Create Discord client
 const client = new Client({
