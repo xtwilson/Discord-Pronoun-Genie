@@ -1,15 +1,16 @@
 import dotenv from "dotenv";
 dotenv.config();
 
-const {
+import {
   Client,
   GatewayIntentBits,
   Partials,
   Events,
   ActionRowBuilder,
   ButtonBuilder,
-  ButtonStyle,
+  ButtonStyle
 } from "discord.js";
+
 import fs from "fs";
 import xml2js from "xml2js";
 
